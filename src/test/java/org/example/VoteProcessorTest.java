@@ -53,6 +53,32 @@ class VoteProcessorTest {
 
             assertThat(existingVoters).contains("SH1");
         }
+
+        @Test
+        @DisplayName("should accept new vote even on record date")
+        void shouldAcceptNewVoteOnRecordDate() throws InvalidProposalException {
+            var vote = new Vote("SH1", "M1", "P1");
+            var existingVoters = new HashSet<String>();
+            var recordDate = LocalDate.of(2025, 1, 20);
+            var currentDate = LocalDate.of(2025, 1, 20);
+
+            var result = processor.processVote(vote, existingVoters, recordDate, currentDate);
+
+            assertThat(result).isEqualTo(VoteResult.ACCEPTED);
+        }
+
+        @Test
+        @DisplayName("should accept new vote even after record date")
+        void shouldAcceptNewVoteAfterRecordDate() throws InvalidProposalException {
+            var vote = new Vote("SH1", "M1", "P1");
+            var existingVoters = new HashSet<String>();
+            var recordDate = LocalDate.of(2025, 1, 20);
+            var currentDate = LocalDate.of(2025, 1, 25);
+
+            var result = processor.processVote(vote, existingVoters, recordDate, currentDate);
+
+            assertThat(result).isEqualTo(VoteResult.ACCEPTED);
+        }
     }
 
     @Nested
@@ -86,7 +112,7 @@ class VoteProcessorTest {
 
             var result = processor.processVote(vote, existingVoters, recordDate, currentDate);
 
-            assertThat(result).isEqualTo(VoteResult.REJECTED_AFTER_RECORD_DATE);
+            assertThat(result).isEqualTo(VoteResult.REJECTED_RECORD_DATE_PASSED);
         }
     }
 
