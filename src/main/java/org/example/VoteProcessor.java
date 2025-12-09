@@ -25,8 +25,7 @@ public class VoteProcessor {
      * @throws InvalidProposalException if the proposal is not valid for the meeting
      */
     public VoteResult processVote(Vote vote, Set<String> existingVoters,
-                                  LocalDate recordDate, LocalDate currentDate)
-            throws InvalidProposalException {
+                                  LocalDate recordDate, LocalDate currentDate) {
 
         Objects.requireNonNull(vote, "vote must not be null");
         Objects.requireNonNull(existingVoters, "existingVoters must not be null");
@@ -37,17 +36,17 @@ public class VoteProcessor {
 
         if (!existingVoters.contains(vote.shareholderId())) {
             existingVoters.add(vote.shareholderId());
-            return VoteResult.ACCEPTED;
+            return new VoteResult.Accepted(vote.shareholderId());
         }
 
         if (currentDate.isBefore(recordDate)) {
-            return VoteResult.VOTE_CHANGED;
+            return new VoteResult.Changed(vote.shareholderId());
         }
 
-        return VoteResult.REJECTED_RECORD_DATE_PASSED;
+        return new VoteResult.Rejected(vote.shareholderId(), "Vote change not allowed after record date");
     }
 
-    private void validateProposal(String meetingId, String proposalId) throws InvalidProposalException {
+    private void validateProposal(String meetingId, String proposalId) {
         var validProposals = MEETING_PROPOSALS.get(meetingId);
         if (validProposals == null || !validProposals.contains(proposalId)) {
             throw new InvalidProposalException(meetingId, proposalId);

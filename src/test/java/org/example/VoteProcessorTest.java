@@ -30,7 +30,7 @@ class VoteProcessorTest {
 
         @Test
         @DisplayName("should accept vote from shareholder who has not voted yet")
-        void shouldAcceptNewVote() throws InvalidProposalException {
+        void shouldAcceptNewVote() {
             var vote = new Vote("SH1", "M1", "P1");
             var existingVoters = new HashSet<String>();
             var recordDate = LocalDate.of(2025, 1, 20);
@@ -38,12 +38,13 @@ class VoteProcessorTest {
 
             var result = processor.processVote(vote, existingVoters, recordDate, currentDate);
 
-            assertThat(result).isEqualTo(VoteResult.ACCEPTED);
+            assertThat(result).isInstanceOf(VoteResult.Accepted.class);
+            assertThat(((VoteResult.Accepted) result).shareholderId()).isEqualTo("SH1");
         }
 
         @Test
         @DisplayName("should add shareholder to existing voters set when vote is accepted")
-        void shouldAddShareholderToExistingVotersWhenNewVoteAccepted() throws InvalidProposalException {
+        void shouldAddShareholderToExistingVotersWhenNewVoteAccepted() {
             var vote = new Vote("SH1", "M1", "P1");
             var existingVoters = new HashSet<String>();
             var recordDate = LocalDate.of(2025, 1, 20);
@@ -56,7 +57,7 @@ class VoteProcessorTest {
 
         @Test
         @DisplayName("should accept new vote even on record date")
-        void shouldAcceptNewVoteOnRecordDate() throws InvalidProposalException {
+        void shouldAcceptNewVoteOnRecordDate() {
             var vote = new Vote("SH1", "M1", "P1");
             var existingVoters = new HashSet<String>();
             var recordDate = LocalDate.of(2025, 1, 20);
@@ -64,12 +65,12 @@ class VoteProcessorTest {
 
             var result = processor.processVote(vote, existingVoters, recordDate, currentDate);
 
-            assertThat(result).isEqualTo(VoteResult.ACCEPTED);
+            assertThat(result).isInstanceOf(VoteResult.Accepted.class);
         }
 
         @Test
         @DisplayName("should accept new vote even after record date")
-        void shouldAcceptNewVoteAfterRecordDate() throws InvalidProposalException {
+        void shouldAcceptNewVoteAfterRecordDate() {
             var vote = new Vote("SH1", "M1", "P1");
             var existingVoters = new HashSet<String>();
             var recordDate = LocalDate.of(2025, 1, 20);
@@ -77,7 +78,7 @@ class VoteProcessorTest {
 
             var result = processor.processVote(vote, existingVoters, recordDate, currentDate);
 
-            assertThat(result).isEqualTo(VoteResult.ACCEPTED);
+            assertThat(result).isInstanceOf(VoteResult.Accepted.class);
         }
     }
 
@@ -87,7 +88,7 @@ class VoteProcessorTest {
 
         @Test
         @DisplayName("should allow vote change when current date is before record date")
-        void shouldAcceptVoteChangeBeforeRecordDate() throws InvalidProposalException {
+        void shouldAcceptVoteChangeBeforeRecordDate() {
             var vote = new Vote("SH1", "M1", "P1");
             var existingVoters = new HashSet<>(Set.of("SH1"));
             var recordDate = LocalDate.of(2025, 1, 20);
@@ -95,7 +96,8 @@ class VoteProcessorTest {
 
             var result = processor.processVote(vote, existingVoters, recordDate, currentDate);
 
-            assertThat(result).isEqualTo(VoteResult.VOTE_CHANGED);
+            assertThat(result).isInstanceOf(VoteResult.Changed.class);
+            assertThat(((VoteResult.Changed) result).shareholderId()).isEqualTo("SH1");
         }
 
         @ParameterizedTest(name = "should reject vote change when current date is {0} (record date: 2025-01-20)")
@@ -104,15 +106,17 @@ class VoteProcessorTest {
                 "2025-01-25, after record date"
         })
         @DisplayName("should reject vote change on or after record date")
-        void shouldRejectVoteChangeOnOrAfterRecordDate(LocalDate currentDate, String scenario)
-                throws InvalidProposalException {
+        void shouldRejectVoteChangeOnOrAfterRecordDate(LocalDate currentDate, String scenario) {
             var vote = new Vote("SH1", "M1", "P1");
             var existingVoters = new HashSet<>(Set.of("SH1"));
             var recordDate = LocalDate.of(2025, 1, 20);
 
             var result = processor.processVote(vote, existingVoters, recordDate, currentDate);
 
-            assertThat(result).isEqualTo(VoteResult.REJECTED_RECORD_DATE_PASSED);
+            assertThat(result).isInstanceOf(VoteResult.Rejected.class);
+            var rejected = (VoteResult.Rejected) result;
+            assertThat(rejected.shareholderId()).isEqualTo("SH1");
+            assertThat(rejected.reason()).isNotBlank();
         }
     }
 

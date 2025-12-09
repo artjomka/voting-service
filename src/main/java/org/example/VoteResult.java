@@ -1,7 +1,10 @@
 package org.example;
 
-public enum VoteResult {
-    ACCEPTED,
-    VOTE_CHANGED,
-    REJECTED_RECORD_DATE_PASSED
+public sealed interface VoteResult {
+
+    record Accepted(String shareholderId) implements VoteResult {}
+
+    record Changed(String shareholderId) implements VoteResult {}
+
+    record Rejected(String shareholderId, String reason) implements VoteResult {}
 }

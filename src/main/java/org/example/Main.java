@@ -62,7 +62,12 @@ public class Main {
 
         try {
             var result = processor.processVote(vote, existingVoters, RECORD_DATE, currentDate);
-            System.out.println("Result: " + result);
+            var message = switch (result) {
+                case VoteResult.Accepted(var id) -> "ACCEPTED - Shareholder %s vote registered".formatted(id);
+                case VoteResult.Changed(var id) -> "CHANGED - Shareholder %s vote updated".formatted(id);
+                case VoteResult.Rejected(var id, var reason) -> "REJECTED - Shareholder %s: %s".formatted(id, reason);
+            };
+            System.out.println("Result: " + message);
         } catch (InvalidProposalException e) {
             System.out.println("Error: " + e.getMessage());
         }
